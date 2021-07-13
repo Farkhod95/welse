@@ -42,7 +42,7 @@ return [
         'width' => '12%',
         'buttons'  => [
             'messages' => function($url, $model){
-                $url = Url::to(['/translates/translates/index/', 'lang_id' => $model->id]);
+                $url = Url::to(['/translations/index/', 'lang_id' => $model->id]);
                 return Html::a('<span class="glyphicon glyphicon-book"></span>', $url, [
                     'class' => 'btn btn-info btn-xs',
                     'data-pjax'=>0,'title'=> Yii::t('app','Translates'),

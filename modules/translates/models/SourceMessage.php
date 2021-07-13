@@ -17,6 +17,9 @@ class SourceMessage extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+
+    public $lang_id;
+    public $translation;
     public static function tableName()
     {
         return '{{%source_message}}';
@@ -29,6 +32,10 @@ class SourceMessage extends \yii\db\ActiveRecord
     {
         return [
             [['keyword'], 'string'],
+            [['translation','lang_id'], 'safe'],
+            [['keyword', 'translation'], 'required'],
+
+
         ];
     }
 
@@ -39,7 +46,8 @@ class SourceMessage extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'keyword' => 'Наименование',
+            'keyword' => 'ключ переводить',
+            'translation' => 'Перевод',
         ];
     }
 
@@ -49,5 +57,14 @@ class SourceMessage extends \yii\db\ActiveRecord
     public function getMessages()
     {
         return $this->hasMany(Message::className(), ['source_message_id' => 'id']);
+    }
+
+    public function saveMessage(){
+        $message = new Message();
+        $message->lang_id = $this->lang_id;
+        $message->translation = $this->translation;
+        $message->source_message_id = $this->id;
+        $message->save();
+        return true;
     }
 }
