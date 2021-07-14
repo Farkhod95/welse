@@ -10,6 +10,8 @@ use yii\helpers\Html;
 <div class="regions-create">
     <?= $this->render('_form', [
         'model' => $model,
-        'available_languages' => $available_languages
+        'titles' => $titles,
+        // 'post' => $post,
+        'langs' => $langs,
     ]) ?>
 </div>

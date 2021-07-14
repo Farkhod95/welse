@@ -3,6 +3,7 @@
 namespace app\modules\regions\controllers;
 
 use app\modules\translates\models\Langs;
+use app\modules\translates\models\Translates;
 use Yii;
 use app\modules\regions\models\Regions;
 use app\modules\regions\models\RegionsSearch;
@@ -96,36 +97,56 @@ class RegionsController extends Controller
     public function actionCreate($country_id)
     {
         $request = Yii::$app->request;
+        $post = $request->post();
         $model = new Regions();
-        $available_languages = Langs::getLanguages();
+        $langs = Langs::getLanguages();
+        $model->country_id = $country_id;
 
         if($request->isAjax){
             /*
             *   Process for ajax request
             */
             Yii::$app->response->format = Response::FORMAT_JSON;
-            if($model->load($request->post()) && $model->validate()){
-                $model->country_id = $country_id;
-                $model->save();
-                return [
-                    'forceReload'=>'#crud-datatable-pjax',
-                    'title'=> Yii::t('app','Create'),
-                    'content'=>'<span class="text-success">'.Yii::t('app','Done successfully').'</span>',
-                    'footer'=> Html::button(Yii::t('app','Close'),['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
-                            Html::a(Yii::t('app','Create More'),['create', 'country_id' => $country_id],['class'=>'btn btn-primary','role'=>'modal-remote'])
-
-                ];
+            if($model->load($request->post()) && $model->save()){
+                $attr = Regions::NeedTranslation();
+                foreach ($langs as $lang) {
+                    $l = $lang->url;
+                    if($l == 'ru') {
+                        if(!$model->save()) {
+                            return [
+                                'title'=> "Создать",
+                                'content'=>$this->renderAjax('create', [
+                                    'model' => $model,
+                                    'titles' => null,
+                                    'langs' => $langs,
+                                ]),
+                                'footer'=> Html::button("Отмена",['class'=>'btn btn-inverse pull-left','data-dismiss'=>"modal"]).
+                                Html::button('Сохранить',['class'=>'btn btn-primary','type'=>"submit"])
+                            ];
+                        }
+                        else continue;
+                    }
+                    foreach ($attr as $key => $value) {
+                        $t = new Translates();
+                        $t->table_name = $model->tableName();
+                        $t->field_id = $model->id;
+                        $t->field_name = $key;
+                        $t->field_value = $post["Regions"][$value][$l];
+                        $t->language_code = $l;
+                        $t->save();
+                    }
+                }
+                return ['forceClose'=>true,'forceReload'=>'#crud-datatable-pjax'];   
             }else{
                 return [
-                    'title'=> Yii::t('app','Create'),
+                    'title'=> "Создать",
                     'content'=>$this->renderAjax('create', [
                         'model' => $model,
-                        'country_id' => $country_id,
-                        'available_languages' => $available_languages
+                        'titles' => null,
+                        'langs' => $langs,
                     ]),
-                    'footer'=> Html::button(Yii::t('app','Close'),['class'=>'btn btn-default pull-left','data-dismiss'=>"modal"]).
-                                Html::button(Yii::t('app','Save'),['class'=>'btn btn-primary','type'=>"submit"])
-
+                    'footer'=> Html::button('Закрыть',['class'=>'btn btn-inverse pull-left','data-dismiss'=>"modal"]).
+                                Html::button('Сохранить',['class'=>'btn btn-primary','type'=>"submit"])
                 ];
             }
         }
