@@ -18,7 +18,7 @@ use app\modules\countries\models\Countries;
 class Regions extends \yii\db\ActiveRecord
 {
     public $tr_name;
-    public $translation_name;
+
     /**
      * {@inheritdoc}
      */
@@ -36,7 +36,7 @@ class Regions extends \yii\db\ActiveRecord
             [['key'], 'integer'],
             [['name'], 'string', 'max' => 255],
             [['country_id'], 'exist', 'skipOnError' => true, 'targetClass' => Countries::className(), 'targetAttribute' => ['country_id' => 'id']],
-            [['tr_name', 'translation_name'],'safe'],
+            [['tr_name'],'safe'],
             [['tr_name'],'validateName']
         ];
     }
@@ -105,13 +105,6 @@ class Regions extends \yii\db\ActiveRecord
     {
         return [
           'name' => 'tr_name'
-        ];
-    }
-    
-    public static function NeedTranslation()
-    {
-        return [
-            'name'=>'translation_name',
         ];
     }
 
